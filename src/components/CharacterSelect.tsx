@@ -16,10 +16,10 @@ const DEFAULT_EMOJIS = [
 ];
 
 const CONTROL_SETS = [
-  { left: "a", right: "d", jump: "w", dash: "s" },
-  { left: "ArrowLeft", right: "ArrowRight", jump: "ArrowUp", dash: "ArrowDown" },
-  { left: "j", right: "l", jump: "i", dash: "k" },
-  { left: "z", right: "c", jump: "x", dash: "v" },
+  { left: "q", right: "e", jump: "w", dash: "2" },
+  { left: "v", right: "n", jump: "b", dash: "g" },
+  { left: ",", right: "/", jump: ".", dash: "l" },
+  { left: "[", right: "]", jump: "\\", dash: "=" },
 ];
 
 interface CharacterSelectProps {
@@ -29,15 +29,24 @@ interface CharacterSelectProps {
   onBack: () => void;
 }
 
+interface PlayerCustomization {
+  name: string;
+  color: string;
+  emoji: string;
+}
+
 const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: CharacterSelectProps) => {
   const [playerCustomizations, setPlayerCustomizations] = useState<{
-    [key: number]: { name: string; color: string; emoji: string }
+    [key: number]: PlayerCustomization
   }>({});
 
-  const updateCustomization = (slotIndex: number, field: string, value: string) => {
+  const updateCustomization = (slotIndex: number, field: keyof PlayerCustomization, value: string) => {
     setPlayerCustomizations(prev => ({
       ...prev,
       [slotIndex]: {
+        name: prev[slotIndex]?.name || "",
+        color: prev[slotIndex]?.color || DEFAULT_COLORS[slotIndex],
+        emoji: prev[slotIndex]?.emoji || DEFAULT_EMOJIS[slotIndex],
         ...prev[slotIndex],
         [field]: value
       }
@@ -104,7 +113,7 @@ const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: Character
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {[0, 1, 2, 3].map((slotIndex) => {
             const existingPlayer = getPlayerForSlot(slotIndex);
-            const customization = playerCustomizations[slotIndex] || {};
+            const customization = playerCustomizations[slotIndex];
             
             return (
               <div key={slotIndex} className="bg-white/20 backdrop-blur-sm rounded-2xl p-6">
@@ -142,7 +151,7 @@ const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: Character
                       <Input
                         id={`name-${slotIndex}`}
                         placeholder="Enter player name"
-                        value={customization.name || ''}
+                        value={customization?.name || ''}
                         onChange={(e) => updateCustomization(slotIndex, 'name', e.target.value)}
                         className="mt-1"
                       />
@@ -156,7 +165,7 @@ const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: Character
                             key={color}
                             onClick={() => updateCustomization(slotIndex, 'color', color)}
                             className={`w-8 h-8 rounded-full transition-all duration-200 ${
-                              customization.color === color ? 'ring-2 ring-white scale-110' : 'hover:scale-105'
+                              (customization?.color || DEFAULT_COLORS[slotIndex]) === color ? 'ring-2 ring-white scale-110' : 'hover:scale-105'
                             }`}
                             style={{ backgroundColor: color }}
                           />
@@ -172,7 +181,7 @@ const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: Character
                             key={emoji}
                             onClick={() => updateCustomization(slotIndex, 'emoji', emoji)}
                             className={`w-8 h-8 text-lg transition-all duration-200 ${
-                              customization.emoji === emoji ? 'bg-white/20 rounded scale-110' : 'hover:bg-white/10 rounded hover:scale-105'
+                              (customization?.emoji || DEFAULT_EMOJIS[slotIndex]) === emoji ? 'bg-white/20 rounded scale-110' : 'hover:bg-white/10 rounded hover:scale-105'
                             }`}
                           >
                             {emoji}
@@ -184,15 +193,15 @@ const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: Character
                     <div className="text-center">
                       <div 
                         className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl shadow-lg"
-                        style={{ backgroundColor: customization.color || DEFAULT_COLORS[slotIndex] }}
+                        style={{ backgroundColor: customization?.color || DEFAULT_COLORS[slotIndex] }}
                       >
-                        {customization.emoji || DEFAULT_EMOJIS[slotIndex]}
+                        {customization?.emoji || DEFAULT_EMOJIS[slotIndex]}
                       </div>
                       <button
                         onClick={() => addPlayer(slotIndex)}
-                        disabled={!customization.name?.trim()}
+                        disabled={!customization?.name?.trim()}
                         className={`font-bold px-4 py-2 rounded-full transition-all duration-200 ${
-                          customization.name?.trim()
+                          customization?.name?.trim()
                             ? 'bg-green-500 hover:bg-green-600 text-white hover:scale-105'
                             : 'bg-gray-400 text-gray-600 cursor-not-allowed'
                         }`}
