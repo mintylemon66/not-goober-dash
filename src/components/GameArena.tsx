@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Player } from "@/pages/Index";
 
@@ -70,77 +69,74 @@ const GameArena = ({ players, setPlayers, onGameEnd }: GameArenaProps) => {
   };
 
   const updateGame = () => {
-    setPlayers(currentPlayers => {
-      const updatedPlayers = currentPlayers.map(player => {
-        if (player.finished) return player;
+    const updatedPlayers = players.map(player => {
+      if (player.finished) return player;
 
-        const newPlayer = { ...player };
-        
-        // Handle input
-        const keys = keysPressed.current;
-        let moveSpeed = 5;
-        
-        if (keys.has(player.controls.left.toLowerCase())) {
-          newPlayer.velocity.x = -moveSpeed;
-        } else if (keys.has(player.controls.right.toLowerCase())) {
-          newPlayer.velocity.x = moveSpeed;
-        } else {
-          newPlayer.velocity.x *= 0.8; // Friction
-        }
-
-        if (keys.has(player.controls.jump.toLowerCase()) && newPlayer.isGrounded) {
-          newPlayer.velocity.y = -15;
-          newPlayer.isGrounded = false;
-        }
-
-        if (keys.has(player.controls.dash.toLowerCase())) {
-          if (newPlayer.velocity.x > 0) newPlayer.velocity.x = Math.min(newPlayer.velocity.x + 3, 12);
-          if (newPlayer.velocity.x < 0) newPlayer.velocity.x = Math.max(newPlayer.velocity.x - 3, -12);
-        }
-
-        // Apply gravity
-        if (!newPlayer.isGrounded) {
-          newPlayer.velocity.y += GRAVITY;
-        }
-
-        // Update position
-        newPlayer.position.x += newPlayer.velocity.x;
-        newPlayer.position.y += newPlayer.velocity.y;
-
-        // Check platform collisions
-        const collision = checkCollision(newPlayer, PLATFORMS);
-        if (collision.collision && collision.side === 'top') {
-          newPlayer.position.y = collision.platform!.y - 30;
-          newPlayer.velocity.y = 0;
-          newPlayer.isGrounded = true;
-        } else {
-          newPlayer.isGrounded = false;
-        }
-
-        // Reset if fallen off screen
-        if (newPlayer.position.y > 600) {
-          newPlayer.position = { x: 100, y: 400 };
-          newPlayer.velocity = { x: 0, y: 0 };
-        }
-
-        // Check finish line
-        if (newPlayer.position.x >= FINISH_LINE_X && !newPlayer.finished) {
-          newPlayer.finished = true;
-          newPlayer.finishTime = gameTime;
-        }
-
-        return newPlayer;
-      });
-
-      // Check for winner (first to finish)
-      const winner = updatedPlayers.find(p => p.finished);
-      if (winner && !currentPlayers.some(p => p.finished)) {
-        setTimeout(() => onGameEnd(winner), 1000);
+      const newPlayer = { ...player };
+      
+      // Handle input
+      const keys = keysPressed.current;
+      let moveSpeed = 5;
+      
+      if (keys.has(player.controls.left.toLowerCase())) {
+        newPlayer.velocity.x = -moveSpeed;
+      } else if (keys.has(player.controls.right.toLowerCase())) {
+        newPlayer.velocity.x = moveSpeed;
+      } else {
+        newPlayer.velocity.x *= 0.8; // Friction
       }
 
-      return updatedPlayers;
+      if (keys.has(player.controls.jump.toLowerCase()) && newPlayer.isGrounded) {
+        newPlayer.velocity.y = -15;
+        newPlayer.isGrounded = false;
+      }
+
+      if (keys.has(player.controls.dash.toLowerCase())) {
+        if (newPlayer.velocity.x > 0) newPlayer.velocity.x = Math.min(newPlayer.velocity.x + 3, 12);
+        if (newPlayer.velocity.x < 0) newPlayer.velocity.x = Math.max(newPlayer.velocity.x - 3, -12);
+      }
+
+      // Apply gravity
+      if (!newPlayer.isGrounded) {
+        newPlayer.velocity.y += GRAVITY;
+      }
+
+      // Update position
+      newPlayer.position.x += newPlayer.velocity.x;
+      newPlayer.position.y += newPlayer.velocity.y;
+
+      // Check platform collisions
+      const collision = checkCollision(newPlayer, PLATFORMS);
+      if (collision.collision && collision.side === 'top') {
+        newPlayer.position.y = collision.platform!.y - 30;
+        newPlayer.velocity.y = 0;
+        newPlayer.isGrounded = true;
+      } else {
+        newPlayer.isGrounded = false;
+      }
+
+      // Reset if fallen off screen
+      if (newPlayer.position.y > 600) {
+        newPlayer.position = { x: 100, y: 400 };
+        newPlayer.velocity = { x: 0, y: 0 };
+      }
+
+      // Check finish line
+      if (newPlayer.position.x >= FINISH_LINE_X && !newPlayer.finished) {
+        newPlayer.finished = true;
+        newPlayer.finishTime = gameTime;
+      }
+
+      return newPlayer;
     });
 
+    // Check for winner (first to finish)
+    const winner = updatedPlayers.find(p => p.finished);
+    if (winner && !players.some(p => p.finished)) {
+      setTimeout(() => onGameEnd(winner), 1000);
+    }
+
+    setPlayers(updatedPlayers);
     setGameTime(time => time + 1);
   };
 
