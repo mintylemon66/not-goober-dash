@@ -30,10 +30,18 @@ export type Player = {
 
 export type GameState = "lobby" | "character-select" | "playing" | "victory";
 
+export type Platform = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 const Index = () => {
   const [gameState, setGameState] = useState<GameState>("lobby");
   const [players, setPlayers] = useState<Player[]>([]);
   const [winner, setWinner] = useState<Player | null>(null);
+  const [currentMap, setCurrentMap] = useState<Platform[]>([]);
 
   const startGame = () => {
     if (players.length > 0) {
@@ -45,6 +53,7 @@ const Index = () => {
     setGameState("lobby");
     setPlayers([]);
     setWinner(null);
+    setCurrentMap([]);
   };
 
   return (
@@ -71,8 +80,9 @@ const Index = () => {
               
               <div className="text-white/80 text-sm space-y-2">
                 <p>• Up to 4 players can join!</p>
-                <p>• Race to the finish line</p>
-                <p>• Use special dash moves</p>
+                <p>• Customize names, colors, and emojis!</p>
+                <p>• Race on randomly generated maps!</p>
+                <p>• Use special dash moves!</p>
                 <p>• Don't fall off the platforms!</p>
               </div>
             </div>
@@ -93,6 +103,8 @@ const Index = () => {
         <GameArena
           players={players}
           setPlayers={setPlayers}
+          currentMap={currentMap}
+          setCurrentMap={setCurrentMap}
           onGameEnd={(winningPlayer) => {
             setWinner(winningPlayer);
             setGameState("victory");

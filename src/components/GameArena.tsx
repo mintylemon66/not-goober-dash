@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Player } from "@/pages/Index";
+import { Player, Platform } from "@/pages/Index";
 
 interface GameArenaProps {
   players: Player[];
   setPlayers: (players: Player[]) => void;
+  currentMap: Platform[];
+  setCurrentMap: (map: Platform[]) => void;
   onGameEnd: (winner: Player) => void;
 }
 
@@ -12,19 +14,61 @@ const GROUND_Y = 500;
 const PLATFORM_HEIGHT = 20;
 const FINISH_LINE_X = 1400;
 
-// Simple obstacle course layout
-const PLATFORMS = [
-  { x: 0, y: GROUND_Y, width: 800, height: PLATFORM_HEIGHT }, // Starting platform
-  { x: 900, y: 450, width: 200, height: PLATFORM_HEIGHT }, // Jump platform
-  { x: 1200, y: 400, width: 200, height: PLATFORM_HEIGHT }, // Higher platform
-  { x: 1500, y: GROUND_Y, width: 300, height: PLATFORM_HEIGHT }, // Finish platform
-];
+// Random map generation
+const generateRandomMap = (): Platform[] => {
+  const maps = [
+    // Map 1: Classic jumps
+    [
+      { x: 0, y: GROUND_Y, width: 800, height: PLATFORM_HEIGHT },
+      { x: 900, y: 450, width: 200, height: PLATFORM_HEIGHT },
+      { x: 1200, y: 400, width: 200, height: PLATFORM_HEIGHT },
+      { x: 1500, y: GROUND_Y, width: 300, height: PLATFORM_HEIGHT },
+    ],
+    // Map 2: Staircase
+    [
+      { x: 0, y: GROUND_Y, width: 400, height: PLATFORM_HEIGHT },
+      { x: 500, y: 460, width: 200, height: PLATFORM_HEIGHT },
+      { x: 750, y: 420, width: 200, height: PLATFORM_HEIGHT },
+      { x: 1000, y: 380, width: 200, height: PLATFORM_HEIGHT },
+      { x: 1250, y: 440, width: 200, height: PLATFORM_HEIGHT },
+      { x: 1500, y: GROUND_Y, width: 300, height: PLATFORM_HEIGHT },
+    ],
+    // Map 3: Valley
+    [
+      { x: 0, y: GROUND_Y, width: 300, height: PLATFORM_HEIGHT },
+      { x: 400, y: 350, width: 150, height: PLATFORM_HEIGHT },
+      { x: 650, y: 300, width: 100, height: PLATFORM_HEIGHT },
+      { x: 850, y: 350, width: 150, height: PLATFORM_HEIGHT },
+      { x: 1100, y: 450, width: 200, height: PLATFORM_HEIGHT },
+      { x: 1400, y: GROUND_Y, width: 400, height: PLATFORM_HEIGHT },
+    ],
+    // Map 4: Islands
+    [
+      { x: 0, y: GROUND_Y, width: 250, height: PLATFORM_HEIGHT },
+      { x: 350, y: 400, width: 100, height: PLATFORM_HEIGHT },
+      { x: 550, y: 350, width: 150, height: PLATFORM_HEIGHT },
+      { x: 800, y: 420, width: 120, height: PLATFORM_HEIGHT },
+      { x: 1050, y: 380, width: 100, height: PLATFORM_HEIGHT },
+      { x: 1250, y: 450, width: 150, height: PLATFORM_HEIGHT },
+      { x: 1500, y: GROUND_Y, width: 300, height: PLATFORM_HEIGHT },
+    ]
+  ];
+  
+  return maps[Math.floor(Math.random() * maps.length)];
+};
 
-const GameArena = ({ players, setPlayers, onGameEnd }: GameArenaProps) => {
+const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, onGameEnd }: GameArenaProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
   const keysPressed = useRef<Set<string>>(new Set());
   const [gameTime, setGameTime] = useState(0);
+
+  // Generate random map on component mount
+  useEffect(() => {
+    if (currentMap.length === 0) {
+      setCurrentMap(generateRandomMap());
+    }
+  }, [currentMap, setCurrentMap]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -44,7 +88,7 @@ const GameArena = ({ players, setPlayers, onGameEnd }: GameArenaProps) => {
     };
   }, []);
 
-  const checkCollision = (player: Player, platforms: typeof PLATFORMS) => {
+  const checkCollision = (player: Player, platforms: Platform[]) => {
     const playerRect = {
       x: player.position.x,
       y: player.position.y,
@@ -106,7 +150,7 @@ const GameArena = ({ players, setPlayers, onGameEnd }: GameArenaProps) => {
       newPlayer.position.y += newPlayer.velocity.y;
 
       // Check platform collisions
-      const collision = checkCollision(newPlayer, PLATFORMS);
+      const collision = checkCollision(newPlayer, currentMap);
       if (collision.collision && collision.side === 'top') {
         newPlayer.position.y = collision.platform!.y - 30;
         newPlayer.velocity.y = 0;
@@ -153,7 +197,7 @@ const GameArena = ({ players, setPlayers, onGameEnd }: GameArenaProps) => {
 
     // Draw platforms
     ctx.fillStyle = '#654321';
-    PLATFORMS.forEach(platform => {
+    currentMap.forEach(platform => {
       ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
     });
 
@@ -170,14 +214,7 @@ const GameArena = ({ players, setPlayers, onGameEnd }: GameArenaProps) => {
     // Draw players
     players.forEach(player => {
       // Player body
-      ctx.fillStyle = player.character.color.replace('bg-', '#').replace('-500', '');
-      const colorMap: { [key: string]: string } = {
-        'red': '#ef4444',
-        'blue': '#3b82f6', 
-        'green': '#22c55e',
-        'yellow': '#eab308'
-      };
-      ctx.fillStyle = colorMap[player.character.id] || '#ef4444';
+      ctx.fillStyle = player.character.color;
       
       ctx.beginPath();
       ctx.arc(player.position.x + 15, player.position.y + 15, 15, 0, Math.PI * 2);
@@ -248,6 +285,7 @@ const GameArena = ({ players, setPlayers, onGameEnd }: GameArenaProps) => {
 
         <div className="mt-4 text-center text-white/80 text-sm">
           <p>🎮 Use your assigned keys to move, jump, and dash! Race to the golden finish line!</p>
+          <p>🗺️ Random map generated - adapt your strategy!</p>
         </div>
       </div>
     </div>
