@@ -193,6 +193,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
   const audioRef = useRef<ReturnType<typeof createAudioContext> | null>(null);
   const lastJumpRef = useRef<{[key: string]: number}>({});
   const lastDashRef = useRef<{[key: string]: number}>({});
+  const gameEndTriggeredRef = useRef<boolean>(false);
   
   const [gameTime, setGameTime] = useState(0);
   const [currentSpikes, setCurrentSpikes] = useState<Spike[]>([]);
@@ -435,23 +436,16 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
 
     // Check if enough players have finished to end the game
     const finishedPlayers = updatedPlayers.filter(p => p.finished);
-    const activePlayers = updatedPlayers.filter(p => !p.finished);
     
-    // End game when the required number of winners finish or when there's been enough time for stragglers
-    if (finishedPlayers.length >= maxWinners && finishedPlayers.length > 0) {
+    // End game when the required number of winners finish
+    if (finishedPlayers.length >= maxWinners && !gameEndTriggeredRef.current) {
+      gameEndTriggeredRef.current = true;
       const winner = finishedPlayers.sort((a, b) => (a.finishTime || 0) - (b.finishTime || 0))[0];
-      if (!players.some(p => p.finished)) {
-        setTimeout(() => onGameEnd(winner), 2000);
-      }
-    } else if (finishedPlayers.length > 0 && activePlayers.length === 0) {
-      // All players finished, end game
-      const winner = finishedPlayers.sort((a, b) => (a.finishTime || 0) - (b.finishTime || 0))[0];
-      if (!players.some(p => p.finished)) {
-        setTimeout(() => onGameEnd(winner), 2000);
-      }
-    } else if (gameTime > 3600) { // 60 seconds max
+      setTimeout(() => onGameEnd(winner), 2000);
+    } else if (gameTime > 3600 && !gameEndTriggeredRef.current) { // 60 seconds max
       // Time limit reached
       if (finishedPlayers.length > 0) {
+        gameEndTriggeredRef.current = true;
         const winner = finishedPlayers.sort((a, b) => (a.finishTime || 0) - (b.finishTime || 0))[0];
         setTimeout(() => onGameEnd(winner), 2000);
       }

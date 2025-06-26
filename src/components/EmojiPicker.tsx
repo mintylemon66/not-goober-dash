@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { X } from "lucide-react";
 
 const EMOJI_CATEGORIES = {
   "Smileys & People": [
@@ -82,13 +82,24 @@ const EMOJI_CATEGORIES = {
 interface EmojiPickerProps {
   selectedEmoji: string;
   onEmojiSelect: (emoji: string) => void;
+  onClose?: () => void;
 }
 
-const EmojiPicker = ({ selectedEmoji, onEmojiSelect }: EmojiPickerProps) => {
+const EmojiPicker = ({ selectedEmoji, onEmojiSelect, onClose }: EmojiPickerProps) => {
   const [activeCategory, setActiveCategory] = useState("Smileys & People");
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 max-w-md">
+    <div className="bg-white rounded-lg shadow-lg p-4 max-w-md relative">
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+          title="Close emoji picker"
+        >
+          <X size={16} className="text-gray-500" />
+        </button>
+      )}
+      
       <div className="mb-4">
         <h3 className="text-lg font-semibold mb-2">Choose an Emoji</h3>
         <div className="flex flex-wrap gap-1 mb-3">

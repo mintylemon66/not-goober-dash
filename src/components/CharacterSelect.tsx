@@ -259,6 +259,7 @@ const CharacterSelect = ({ players, setPlayers, maxWinners, setMaxWinners, onSta
                         onColorSelect={(color) => {
                           updateCustomization(slotIndex, 'color', color);
                         }}
+                        onClose={() => setActiveColorPicker(null)}
                       />
                     </div>
                   </div>
@@ -273,6 +274,7 @@ const CharacterSelect = ({ players, setPlayers, maxWinners, setMaxWinners, onSta
                         onEmojiSelect={(emoji) => {
                           updateCustomization(slotIndex, 'emoji', emoji);
                         }}
+                        onClose={() => setActiveEmojiPicker(null)}
                       />
                     </div>
                   </div>

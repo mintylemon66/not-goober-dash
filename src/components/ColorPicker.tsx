@@ -1,13 +1,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
 
 interface ColorPickerProps {
   selectedColor: string;
   onColorSelect: (color: string) => void;
+  onClose?: () => void;
 }
 
-const ColorPicker = ({ selectedColor, onColorSelect }: ColorPickerProps) => {
+const ColorPicker = ({ selectedColor, onColorSelect, onClose }: ColorPickerProps) => {
   const [hexInput, setHexInput] = useState(selectedColor);
   const [isColorWheelActive, setIsColorWheelActive] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -111,7 +113,17 @@ const ColorPicker = ({ selectedColor, onColorSelect }: ColorPickerProps) => {
   const isValidHex = (hex: string) => /^#[0-9A-F]{6}$/i.test(hex);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 max-w-sm">
+    <div className="bg-white rounded-lg shadow-lg p-4 max-w-sm relative">
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+          title="Close color picker"
+        >
+          <X size={16} className="text-gray-500" />
+        </button>
+      )}
+      
       <h3 className="text-lg font-semibold mb-4">Choose a Color</h3>
       
       {/* Hex Input */}
