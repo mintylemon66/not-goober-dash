@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import CharacterSelect from "@/components/CharacterSelect";
 import GameArena from "@/components/GameArena";
@@ -42,6 +41,7 @@ const Index = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [winner, setWinner] = useState<Player | null>(null);
   const [currentMap, setCurrentMap] = useState<Platform[]>([]);
+  const [maxWinners, setMaxWinners] = useState<number>(1);
 
   const startGame = () => {
     if (players.length > 0) {
@@ -54,6 +54,25 @@ const Index = () => {
     setPlayers([]);
     setWinner(null);
     setCurrentMap([]);
+    setMaxWinners(1);
+  };
+
+  const playAnotherRound = () => {
+    // Reset game state but keep players and their customizations
+    const resetPlayers = players.map(player => ({
+      ...player,
+      position: { x: 100 + players.indexOf(player) * 50, y: 400 },
+      velocity: { x: 0, y: 0 },
+      isGrounded: false,
+      score: 0,
+      finished: false,
+      finishTime: undefined
+    }));
+    
+    setPlayers(resetPlayers);
+    setWinner(null);
+    setCurrentMap([]);
+    setGameState("character-select");
   };
 
   return (
@@ -94,6 +113,8 @@ const Index = () => {
         <CharacterSelect
           players={players}
           setPlayers={setPlayers}
+          maxWinners={maxWinners}
+          setMaxWinners={setMaxWinners}
           onStartGame={startGame}
           onBack={() => setGameState("lobby")}
         />
@@ -105,6 +126,7 @@ const Index = () => {
           setPlayers={setPlayers}
           currentMap={currentMap}
           setCurrentMap={setCurrentMap}
+          maxWinners={maxWinners}
           onGameEnd={(winningPlayer) => {
             setWinner(winningPlayer);
             setGameState("victory");
@@ -117,6 +139,7 @@ const Index = () => {
           winner={winner}
           players={players}
           onPlayAgain={resetGame}
+          onAnotherRound={playAnotherRound}
         />
       )}
     </div>

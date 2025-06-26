@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Player, Platform } from "@/pages/Index";
 
@@ -7,6 +6,7 @@ interface GameArenaProps {
   setPlayers: (players: Player[]) => void;
   currentMap: Platform[];
   setCurrentMap: (map: Platform[]) => void;
+  maxWinners: number;
   onGameEnd: (winner: Player) => void;
 }
 
@@ -186,7 +186,7 @@ const generateRandomMap = (): { platforms: Platform[], spikes: Spike[] } => {
   return maps[Math.floor(Math.random() * maps.length)];
 };
 
-const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, onGameEnd }: GameArenaProps) => {
+const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners, onGameEnd }: GameArenaProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
   const keysPressed = useRef<Set<string>>(new Set());
@@ -433,14 +433,26 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, onGameEnd }
       life: particle.life - 1
     })).filter(particle => particle.life > 0));
 
-    // Check if all players are finished or if we have a winner to end the game
+    // Check if enough players have finished to end the game
     const finishedPlayers = updatedPlayers.filter(p => p.finished);
     const activePlayers = updatedPlayers.filter(p => !p.finished);
     
-    // End game when all players finish or when there's been enough time for stragglers
-    if (finishedPlayers.length > 0 && (activePlayers.length === 0 || gameTime > 3600)) { // 60 seconds max
+    // End game when the required number of winners finish or when there's been enough time for stragglers
+    if (finishedPlayers.length >= maxWinners && finishedPlayers.length > 0) {
       const winner = finishedPlayers.sort((a, b) => (a.finishTime || 0) - (b.finishTime || 0))[0];
       if (!players.some(p => p.finished)) {
+        setTimeout(() => onGameEnd(winner), 2000);
+      }
+    } else if (finishedPlayers.length > 0 && activePlayers.length === 0) {
+      // All players finished, end game
+      const winner = finishedPlayers.sort((a, b) => (a.finishTime || 0) - (b.finishTime || 0))[0];
+      if (!players.some(p => p.finished)) {
+        setTimeout(() => onGameEnd(winner), 2000);
+      }
+    } else if (gameTime > 3600) { // 60 seconds max
+      // Time limit reached
+      if (finishedPlayers.length > 0) {
+        const winner = finishedPlayers.sort((a, b) => (a.finishTime || 0) - (b.finishTime || 0))[0];
         setTimeout(() => onGameEnd(winner), 2000);
       }
     }
@@ -583,13 +595,18 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, onGameEnd }
             <h2 className="text-2xl font-bold">🏁 Goober Race!</h2>
             <div className="text-lg">Time: {Math.floor(gameTime / 60)}s</div>
           </div>
-          <div className="flex gap-4 mt-2">
-            {players.map(player => (
-              <div key={player.id} className="text-white text-sm">
-                {player.character.emoji} {player.character.name}
-                {player.finished && <span className="text-yellow-300"> - Finished! 🏆</span>}
-              </div>
-            ))}
+          <div className="flex justify-between items-center mt-2">
+            <div className="flex gap-4">
+              {players.map(player => (
+                <div key={player.id} className="text-white text-sm">
+                  {player.character.emoji} {player.character.name}
+                  {player.finished && <span className="text-yellow-300"> - Finished! 🏆</span>}
+                </div>
+              ))}
+            </div>
+            <div className="text-white text-sm">
+              🏆 Winners needed: {maxWinners} | Finished: {players.filter(p => p.finished).length}
+            </div>
           </div>
         </div>
 

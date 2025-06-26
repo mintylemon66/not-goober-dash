@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Character, Player } from "@/pages/Index";
 import { Input } from "@/components/ui/input";
@@ -25,6 +24,8 @@ const CONTROL_SETS = [
 interface CharacterSelectProps {
   players: Player[];
   setPlayers: (players: Player[]) => void;
+  maxWinners: number;
+  setMaxWinners: (maxWinners: number) => void;
   onStartGame: () => void;
   onBack: () => void;
 }
@@ -35,7 +36,7 @@ interface PlayerCustomization {
   emoji: string;
 }
 
-const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: CharacterSelectProps) => {
+const CharacterSelect = ({ players, setPlayers, maxWinners, setMaxWinners, onStartGame, onBack }: CharacterSelectProps) => {
   const [playerCustomizations, setPlayerCustomizations] = useState<{
     [key: number]: PlayerCustomization
   }>({});
@@ -110,6 +111,36 @@ const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: Character
           <p className="text-white/80 text-lg">Create unique characters with custom names, colors, and emojis</p>
         </div>
 
+        {/* Winner Selection Section */}
+        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
+          <h3 className="text-2xl font-bold text-white mb-4 text-center">🏆 Race Settings</h3>
+          <div className="flex items-center justify-center gap-4">
+            <Label className="text-white text-lg">Number of Winners:</Label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setMaxWinners(num)}
+                  disabled={num > players.length && players.length > 0}
+                  className={`w-12 h-12 rounded-full font-bold text-lg transition-all duration-200 ${
+                    maxWinners === num
+                      ? 'bg-yellow-500 text-white scale-110 shadow-lg'
+                      : num > players.length && players.length > 0
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-white/30 text-white hover:bg-white/40 hover:scale-105'
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="text-white/70 text-sm text-center mt-2">
+            Game ends when {maxWinners} player{maxWinners > 1 ? 's' : ''} reach{maxWinners === 1 ? 'es' : ''} the finish line
+          </p>
+        </div>
+
+        {/* Player Customization Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {[0, 1, 2, 3].map((slotIndex) => {
             const existingPlayer = getPlayerForSlot(slotIndex);
@@ -232,7 +263,7 @@ const CharacterSelect = ({ players, setPlayers, onStartGame, onBack }: Character
                 : 'bg-gray-400 text-gray-600 cursor-not-allowed'
             }`}
           >
-            Start Race! ({players.length} players)
+            Start Race! ({players.length} players, {maxWinners} winner{maxWinners > 1 ? 's' : ''})
           </button>
         </div>
       </div>

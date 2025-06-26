@@ -1,13 +1,13 @@
-
 import { Player } from "@/pages/Index";
 
 interface VictoryScreenProps {
   winner: Player;
   players: Player[];
   onPlayAgain: () => void;
+  onAnotherRound: () => void;
 }
 
-const VictoryScreen = ({ winner, players, onPlayAgain }: VictoryScreenProps) => {
+const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: VictoryScreenProps) => {
   const sortedPlayers = [...players].sort((a, b) => {
     if (a.finished && b.finished) {
       return (a.finishTime || 0) - (b.finishTime || 0);
@@ -72,15 +72,25 @@ const VictoryScreen = ({ winner, players, onPlayAgain }: VictoryScreenProps) => 
         </div>
 
         <div className="space-y-4">
-          <button
-            onClick={onPlayAgain}
-            className="bg-green-500 hover:bg-green-600 text-white font-bold text-xl px-8 py-4 rounded-full shadow-lg hover:scale-110 transition-all duration-200"
-          >
-            🎮 Play Again!
-          </button>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={onAnotherRound}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold text-xl px-8 py-4 rounded-full shadow-lg hover:scale-110 transition-all duration-200"
+            >
+              🎮 Another Round!
+            </button>
+            <button
+              onClick={onPlayAgain}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold text-xl px-8 py-4 rounded-full shadow-lg hover:scale-110 transition-all duration-200"
+            >
+              🎯 New Game
+            </button>
+          </div>
           
-          <div className="text-white/60 text-sm">
-            <p>🎉 Great race everyone! Ready for another round?</p>
+          <div className="text-white/60 text-sm space-y-1">
+            <p>🎉 Great race everyone!</p>
+            <p>🔄 "Another Round!" keeps your characters</p>
+            <p>🆕 "New Game" starts fresh from the lobby</p>
           </div>
         </div>
       </div>
