@@ -1,7 +1,10 @@
+
 import { useState } from "react";
 import { Character, Player } from "@/pages/Index";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import EmojiPicker from "./EmojiPicker";
+import ColorPicker from "./ColorPicker";
 
 const DEFAULT_COLORS = [
   "#ef4444", "#f97316", "#eab308", "#22c55e", 
@@ -40,6 +43,8 @@ const CharacterSelect = ({ players, setPlayers, maxWinners, setMaxWinners, onSta
   const [playerCustomizations, setPlayerCustomizations] = useState<{
     [key: number]: PlayerCustomization
   }>({});
+  const [activeColorPicker, setActiveColorPicker] = useState<number | null>(null);
+  const [activeEmojiPicker, setActiveEmojiPicker] = useState<number | null>(null);
 
   const updateCustomization = (slotIndex: number, field: keyof PlayerCustomization, value: string) => {
     setPlayerCustomizations(prev => ({
@@ -147,7 +152,7 @@ const CharacterSelect = ({ players, setPlayers, maxWinners, setMaxWinners, onSta
             const customization = playerCustomizations[slotIndex];
             
             return (
-              <div key={slotIndex} className="bg-white/20 backdrop-blur-sm rounded-2xl p-6">
+              <div key={slotIndex} className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 relative">
                 <h3 className="text-2xl font-bold text-white mb-4 text-center">
                   Player {slotIndex + 1}
                 </h3>
@@ -190,34 +195,36 @@ const CharacterSelect = ({ players, setPlayers, maxWinners, setMaxWinners, onSta
                     
                     <div>
                       <Label className="text-white">Color</Label>
-                      <div className="grid grid-cols-6 gap-2 mt-2">
-                        {DEFAULT_COLORS.map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => updateCustomization(slotIndex, 'color', color)}
-                            className={`w-8 h-8 rounded-full transition-all duration-200 ${
-                              (customization?.color || DEFAULT_COLORS[slotIndex]) === color ? 'ring-2 ring-white scale-110' : 'hover:scale-105'
-                            }`}
-                            style={{ backgroundColor: color }}
+                      <div className="mt-2">
+                        <button
+                          onClick={() => setActiveColorPicker(activeColorPicker === slotIndex ? null : slotIndex)}
+                          className="w-full p-3 bg-white/10 hover:bg-white/20 rounded-lg border border-white/30 transition-colors flex items-center justify-between"
+                        >
+                          <span className="text-white">
+                            {activeColorPicker === slotIndex ? 'Close Color Picker' : 'Open Color Picker'}
+                          </span>
+                          <div 
+                            className="w-8 h-8 rounded border-2 border-white"
+                            style={{ backgroundColor: customization?.color || DEFAULT_COLORS[slotIndex] }}
                           />
-                        ))}
+                        </button>
                       </div>
                     </div>
                     
                     <div>
                       <Label className="text-white">Emoji</Label>
-                      <div className="grid grid-cols-8 gap-2 mt-2">
-                        {DEFAULT_EMOJIS.map((emoji) => (
-                          <button
-                            key={emoji}
-                            onClick={() => updateCustomization(slotIndex, 'emoji', emoji)}
-                            className={`w-8 h-8 text-lg transition-all duration-200 ${
-                              (customization?.emoji || DEFAULT_EMOJIS[slotIndex]) === emoji ? 'bg-white/20 rounded scale-110' : 'hover:bg-white/10 rounded hover:scale-105'
-                            }`}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
+                      <div className="mt-2">
+                        <button
+                          onClick={() => setActiveEmojiPicker(activeEmojiPicker === slotIndex ? null : slotIndex)}
+                          className="w-full p-3 bg-white/10 hover:bg-white/20 rounded-lg border border-white/30 transition-colors flex items-center justify-between"
+                        >
+                          <span className="text-white">
+                            {activeEmojiPicker === slotIndex ? 'Close Emoji Picker' : 'Choose Emoji'}
+                          </span>
+                          <div className="text-2xl">
+                            {customization?.emoji || DEFAULT_EMOJIS[slotIndex]}
+                          </div>
+                        </button>
                       </div>
                     </div>
                     
@@ -239,6 +246,34 @@ const CharacterSelect = ({ players, setPlayers, maxWinners, setMaxWinners, onSta
                       >
                         Add Player
                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Color Picker Overlay */}
+                {activeColorPicker === slotIndex && (
+                  <div className="absolute top-0 left-0 right-0 z-50 flex justify-center">
+                    <div className="mt-4">
+                      <ColorPicker
+                        selectedColor={customization?.color || DEFAULT_COLORS[slotIndex]}
+                        onColorSelect={(color) => {
+                          updateCustomization(slotIndex, 'color', color);
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Emoji Picker Overlay */}
+                {activeEmojiPicker === slotIndex && (
+                  <div className="absolute top-0 left-0 right-0 z-50 flex justify-center">
+                    <div className="mt-4">
+                      <EmojiPicker
+                        selectedEmoji={customization?.emoji || DEFAULT_EMOJIS[slotIndex]}
+                        onEmojiSelect={(emoji) => {
+                          updateCustomization(slotIndex, 'emoji', emoji);
+                        }}
+                      />
                     </div>
                   </div>
                 )}
