@@ -31,9 +31,7 @@ const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
 
   const fetchLeaderboard = async () => {
     try {
-      // Use raw SQL query since the table isn't in our types yet
-      const { data, error } = await supabase
-        .rpc('get_leaderboard');
+      const { data, error } = await supabase.rpc('get_leaderboard');
 
       if (error) {
         console.error('Error fetching leaderboard:', error);

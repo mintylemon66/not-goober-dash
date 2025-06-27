@@ -53,15 +53,13 @@ const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: Victory
 
           // Only save the current user's result
           if (player.id === 'player-1') { // Assuming the current user is always player-1
-            // Use raw SQL query since the table isn't in our types yet
-            const { error } = await supabase
-              .rpc('insert_race_result', {
-                p_user_id: user.id,
-                p_username: username,
-                p_finish_time: player.finishTime,
-                p_character_name: player.character.name,
-                p_character_emoji: player.character.emoji
-              });
+            const { error } = await supabase.rpc('insert_race_result', {
+              p_user_id: user.id,
+              p_username: username,
+              p_finish_time: player.finishTime,
+              p_character_name: player.character.name,
+              p_character_emoji: player.character.emoji
+            });
             
             if (error) {
               console.error('Error saving race result:', error);
