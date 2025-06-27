@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import CharacterSelect from "@/components/CharacterSelect";
 import GameArena from "@/components/GameArena";
 import VictoryScreen from "@/components/VictoryScreen";
+import AuthForm from "@/components/AuthForm";
+import UserProfile from "@/components/UserProfile";
 
 export type Character = {
   id: string;
@@ -42,6 +45,8 @@ const Index = () => {
   const [winner, setWinner] = useState<Player | null>(null);
   const [currentMap, setCurrentMap] = useState<Platform[]>([]);
   const [maxWinners, setMaxWinners] = useState<number>(1);
+  const [showAuthForm, setShowAuthForm] = useState(false);
+  const { loading } = useAuth();
 
   const startGame = () => {
     if (players.length > 0) {
@@ -75,10 +80,22 @@ const Index = () => {
     setGameState("character-select");
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center">
+        <div className="text-white text-2xl">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
       {gameState === "lobby" && (
         <div className="min-h-screen flex items-center justify-center">
+          <div className="absolute top-4 right-4">
+            <UserProfile onAuthClick={() => setShowAuthForm(true)} />
+          </div>
+          
           <div className="text-center space-y-8 p-8">
             <div className="space-y-4">
               <h1 className="text-8xl font-bold text-white drop-shadow-lg animate-bounce">
@@ -141,6 +158,10 @@ const Index = () => {
           onPlayAgain={resetGame}
           onAnotherRound={playAnotherRound}
         />
+      )}
+
+      {showAuthForm && (
+        <AuthForm onClose={() => setShowAuthForm(false)} />
       )}
     </div>
   );
