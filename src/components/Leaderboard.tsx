@@ -31,16 +31,9 @@ const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
 
   const fetchLeaderboard = async () => {
     try {
+      // Use raw SQL query since the table isn't in our types yet
       const { data, error } = await supabase
-        .from('race_results')
-        .select(`
-          id,
-          username,
-          finish_time,
-          created_at
-        `)
-        .order('finish_time', { ascending: true })
-        .limit(10);
+        .rpc('get_leaderboard');
 
       if (error) {
         console.error('Error fetching leaderboard:', error);

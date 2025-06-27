@@ -30,6 +30,36 @@ export type Database = {
         }
         Relationships: []
       }
+      race_results: {
+        Row: {
+          character_emoji: string | null
+          character_name: string | null
+          created_at: string
+          finish_time: number
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          character_emoji?: string | null
+          character_name?: string | null
+          created_at?: string
+          finish_time: number
+          id?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          character_emoji?: string | null
+          character_name?: string | null
+          created_at?: string
+          finish_time?: number
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
