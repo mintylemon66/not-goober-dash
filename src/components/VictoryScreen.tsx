@@ -1,4 +1,9 @@
+
+import { useEffect } from "react";
 import { Player } from "@/pages/Index";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import Leaderboard from "./Leaderboard";
 
 interface VictoryScreenProps {
   winner: Player;
@@ -8,6 +13,8 @@ interface VictoryScreenProps {
 }
 
 const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: VictoryScreenProps) => {
+  const { user } = useAuth();
+
   const sortedPlayers = [...players].sort((a, b) => {
     if (a.finished && b.finished) {
       return (a.finishTime || 0) - (b.finishTime || 0);
@@ -17,9 +24,67 @@ const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: Victory
     return 0;
   });
 
+  // Save race results to database
+  useEffect(() => {
+    const saveRaceResults = async () => {
+      if (!user) return;
+
+      const finishedPlayers = sortedPlayers.filter(player => player.finished && player.finishTime);
+      
+      for (const player of finishedPlayers) {
+        try {
+          // Get username from user metadata or profiles table
+          let username = user.user_metadata?.username || user.email || 'Anonymous';
+          
+          if (user.user_metadata?.username) {
+            username = user.user_metadata.username;
+          } else {
+            // Try to get username from profiles table
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('username')
+              .eq('id', user.id)
+              .single();
+            
+            if (profile?.username) {
+              username = profile.username;
+            }
+          }
+
+          // Only save the current user's result
+          if (player.id === 'player-1') { // Assuming the current user is always player-1
+            await supabase
+              .from('race_results')
+              .insert({
+                user_id: user.id,
+                username: username,
+                finish_time: player.finishTime,
+                character_name: player.character.name,
+                character_emoji: player.character.emoji
+              });
+          }
+        } catch (error) {
+          console.error('Error saving race result:', error);
+        }
+      }
+    };
+
+    saveRaceResults();
+  }, [user, sortedPlayers]);
+
+  // Prepare current race results for leaderboard
+  const currentRaceResults = sortedPlayers
+    .filter(player => player.finished && player.finishTime)
+    .map(player => ({
+      username: player.character.name,
+      finishTime: player.finishTime || 0,
+      characterName: player.character.name,
+      characterEmoji: player.character.emoji
+    }));
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center space-y-8 p-8">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="text-center space-y-8 w-full max-w-6xl">
         <div className="space-y-4">
           <div className="text-8xl animate-bounce">🏆</div>
           <h1 className="text-6xl font-bold text-white drop-shadow-lg">
@@ -36,40 +101,14 @@ const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: Victory
             </p>
             {winner.finishTime && (
               <p className="text-xl text-white/80">
-                Finish Time: {Math.floor(winner.finishTime / 60)} seconds
+                Finish Time: {Math.floor(winner.finishTime / 1000)}.{(winner.finishTime % 1000).toString().padStart(3, '0')}s
               </p>
             )}
           </div>
         </div>
 
-        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 space-y-4">
-          <h3 className="text-2xl font-bold text-white mb-4">Final Results</h3>
-          {sortedPlayers.map((player, index) => (
-            <div 
-              key={player.id} 
-              className={`flex items-center justify-between p-3 rounded-lg ${
-                index === 0 ? 'bg-yellow-500/30' : 'bg-white/10'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold text-white">#{index + 1}</span>
-                <div 
-                  className={`w-12 h-12 rounded-full ${player.character.color} flex items-center justify-center text-2xl`}
-                >
-                  {player.character.emoji}
-                </div>
-                <span className="text-white font-semibold">{player.character.name}</span>
-              </div>
-              <div className="text-white/80">
-                {player.finished ? (
-                  <>🏁 {Math.floor((player.finishTime || 0) / 60)}s</>
-                ) : (
-                  <>❌ Did not finish</>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Leaderboard Section */}
+        <Leaderboard currentRaceResults={currentRaceResults} />
 
         <div className="space-y-4">
           <div className="flex gap-4 justify-center">
