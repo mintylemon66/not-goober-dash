@@ -107,10 +107,10 @@ const Index = () => {
           <div className="text-center space-y-8 p-8">
             <div className="space-y-4">
               <h1 className="text-8xl font-bold text-white drop-shadow-lg animate-bounce">
-                🟡 GOOBERS 🟡
+                🟡 NOT GOOBER DASH 🟡
               </h1>
               <p className="text-2xl text-white/90 font-semibold">
-                The Ultimate Silly Racing Game!
+                inspired by goober dash
               </p>
             </div>
             
@@ -131,12 +131,12 @@ const Index = () => {
               </div>
               
               <div className="text-white/80 text-sm space-y-2">
-                <p>• Up to 4 players can join!</p>
-                <p>• Customize names, colors, and emojis!</p>
-                <p>• Race on randomly generated maps!</p>
-                <p>• Use special dash moves!</p>
+                <p>• Up to 4 players can join ❤️</p>
+                <p>• Customize names, colors, and emojis ✨</p>
+                <p>• Race on randomly generated maps ⁉️</p>
+                <p>• Dash is still in developent xoop</p>
                 <p>• Don't fall off the platforms!</p>
-                <p>• Track your personal best times!</p>
+                <p>• COMPETE ON THE LEADERBOARD.</p>
               </div>
             </div>
           </div>
