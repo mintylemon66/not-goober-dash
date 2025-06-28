@@ -595,7 +595,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-4">
           <div className="flex justify-between items-center text-white">
             <h2 className="text-2xl font-bold">🏁 Goober Race!</h2>
-            <div className="text-lg">Time: {gameTime}s</div>
+            <div className="text-lg">Time: {Math.floor(gameTime)}s</div>
           </div>
           <div className="flex justify-between items-center mt-2">
             <div className="flex gap-4">
