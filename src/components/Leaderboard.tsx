@@ -79,7 +79,7 @@ const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
   };
 
   const formatTime = (timeInMs: number) => { 
-    return (timeInMs/1000).toFixed(3) + 's';
+    return (timeInMs).toFixed(3) + 's';
   };
 
   return (
