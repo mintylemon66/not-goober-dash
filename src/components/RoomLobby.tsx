@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,6 +42,59 @@ const RoomLobby = ({ onStartPrivateGame, onBack }: RoomLobbyProps) => {
     }
   }, [currentRoom]);
 
+  // Set up real-time subscriptions when user joins a room
+  useEffect(() => {
+    if (!currentRoom) return;
+
+    console.log('Setting up real-time subscriptions for room:', currentRoom.id);
+    
+    // Subscribe to room_players changes
+    const playersChannel = supabase
+      .channel(`room_players_${currentRoom.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'room_players',
+          filter: `room_id=eq.${currentRoom.id}`
+        },
+        (payload) => {
+          console.log('Room players change:', payload);
+          // Refetch players when there's any change
+          fetchRoomPlayers(currentRoom.id);
+        }
+      )
+      .subscribe();
+
+    // Subscribe to room changes (in case host updates room settings)
+    const roomChannel = supabase
+      .channel(`room_${currentRoom.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'rooms',
+          filter: `id=eq.${currentRoom.id}`
+        },
+        (payload) => {
+          console.log('Room change:', payload);
+          // Update current room data
+          if (payload.new) {
+            setCurrentRoom(payload.new as Room);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up real-time subscriptions');
+      supabase.removeChannel(playersChannel);
+      supabase.removeChannel(roomChannel);
+    };
+  }, [currentRoom]);
+
   const fetchRoomPlayers = async (roomId: string) => {
     try {
       const { data, error } = await supabase
@@ -56,6 +108,7 @@ const RoomLobby = ({ onStartPrivateGame, onBack }: RoomLobbyProps) => {
         return;
       }
 
+      console.log('Fetched room players:', data);
       setRoomPlayers(data || []);
     } catch (error) {
       console.error('Error fetching room players:', error);
