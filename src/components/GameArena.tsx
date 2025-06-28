@@ -607,7 +607,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
               ))}
             </div>
             <div className="text-white text-sm">
-              🏆 Winners needed: {maxWinners} | Finished: {players.filter(p => p.finished).length}
+              xiooix
             </div>
           </div>
         </div>
