@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Player, Platform } from "@/pages/Index";
 
@@ -194,11 +195,17 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
   const lastJumpRef = useRef<{[key: string]: number}>({});
   const lastDashRef = useRef<{[key: string]: number}>({});
   const gameEndTriggeredRef = useRef<boolean>(false);
+  const gameStartTimeRef = useRef<number>(Date.now());
   
   const [gameTime, setGameTime] = useState(0);
   const [currentSpikes, setCurrentSpikes] = useState<Spike[]>([]);
   const [deathParticles, setDeathParticles] = useState<DeathParticle[]>([]);
   const [finishLineParticles, setFinishLineParticles] = useState<{x: number, y: number, vy: number, life: number}[]>([]);
+
+  // Initialize game start time
+  useEffect(() => {
+    gameStartTimeRef.current = Date.now();
+  }, []);
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -315,6 +322,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
 
   const updateGame = () => {
     const currentTime = Date.now();
+    const elapsedSeconds = Math.floor((currentTime - gameStartTimeRef.current) / 1000);
     
     const updatedPlayers = players.map(player => {
       if (player.finished) return player;
@@ -398,7 +406,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
       // Check finish line
       if (newPlayer.position.x >= FINISH_LINE_X && !newPlayer.finished) {
         newPlayer.finished = true;
-        newPlayer.finishTime = gameTime;
+        newPlayer.finishTime = elapsedSeconds;
         audioRef.current?.playFinishSound();
         
         // Create finish line particles
@@ -442,7 +450,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
       gameEndTriggeredRef.current = true;
       const winner = finishedPlayers.sort((a, b) => (a.finishTime || 0) - (b.finishTime || 0))[0];
       setTimeout(() => onGameEnd(winner), 2000);
-    } else if (gameTime > 3600 && !gameEndTriggeredRef.current) { // 60 seconds max
+    } else if (elapsedSeconds > 60 && !gameEndTriggeredRef.current) { // 60 seconds max
       // Time limit reached
       if (finishedPlayers.length > 0) {
         gameEndTriggeredRef.current = true;
@@ -452,7 +460,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
     }
 
     setPlayers(updatedPlayers);
-    setGameTime(time => time + 1);
+    setGameTime(elapsedSeconds);
   };
 
   const draw = () => {
@@ -587,7 +595,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-4">
           <div className="flex justify-between items-center text-white">
             <h2 className="text-2xl font-bold">🏁 Goober Race!</h2>
-            <div className="text-lg">Time: {Math.floor(gameTime / 60)}s</div>
+            <div className="text-lg">Time: {gameTime}s</div>
           </div>
           <div className="flex justify-between items-center mt-2">
             <div className="flex gap-4">

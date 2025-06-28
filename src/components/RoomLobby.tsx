@@ -137,6 +137,20 @@ const RoomLobby = ({ onStartPrivateGame, onBack }: RoomLobbyProps) => {
         return;
       }
 
+      // Check if user is already in this room
+      const { data: existingPlayer, error: existingError } = await supabase
+        .from('room_players')
+        .select('*')
+        .eq('room_id', roomData.id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingPlayer) {
+        // User is already in the room, just set current room
+        setCurrentRoom(roomData);
+        return;
+      }
+
       // Check if room is full
       const { data: playersData, error: playersError } = await supabase
         .from('room_players')
@@ -245,9 +259,9 @@ const RoomLobby = ({ onStartPrivateGame, onBack }: RoomLobbyProps) => {
               {currentRoom.host_user_id === user.id && roomPlayers.length >= 2 && (
                 <Button 
                   onClick={() => onStartPrivateGame(currentRoom.code)}
-                  className="bg-green-500 hover:bg-green-600"
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 text-lg"
                 >
-                  Start Game
+                  🚀 Start Game
                 </Button>
               )}
               <Button onClick={leaveRoom} variant="destructive">
@@ -258,6 +272,12 @@ const RoomLobby = ({ onStartPrivateGame, onBack }: RoomLobbyProps) => {
             {currentRoom.host_user_id === user.id && roomPlayers.length < 2 && (
               <p className="text-white/70 text-center">
                 Waiting for at least 2 players to start the game...
+              </p>
+            )}
+            
+            {currentRoom.host_user_id !== user.id && (
+              <p className="text-white/70 text-center">
+                Waiting for the host to start the game...
               </p>
             )}
           </CardContent>
