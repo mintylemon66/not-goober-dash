@@ -100,9 +100,8 @@ const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: Victory
       characterEmoji: player.character.emoji
     }));
 
-  const formatTime = (timeInMs: number) => {
-    const timeInSeconds = timeInMs / 1000;
-    return timeInSeconds.toFixed(4);
+  const formatTime = (timeInMs: number) => { 
+    return timeInMs.toFixed(3);
   };
 
   return (
