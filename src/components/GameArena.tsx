@@ -322,7 +322,7 @@ const GameArena = ({ players, setPlayers, currentMap, setCurrentMap, maxWinners,
 
   const updateGame = () => {
     const currentTime = Date.now();
-    const elapsedSeconds = Math.floor((currentTime - gameStartTimeRef.current) / 1000);
+    const elapsedSeconds = (currentTime - gameStartTimeRef.current) / 1000;
     
     const updatedPlayers = players.map(player => {
       if (player.finished) return player;
