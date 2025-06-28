@@ -81,7 +81,7 @@ const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
   const formatTime = (timeInMs: number) => {
     const seconds = Math.floor(timeInMs );
     const milliseconds = timeInMs % 1000;
-    return `${seconds}.${milliseconds.toString().padStart(3, '0')}s`;
+    return timeInMs;
   };
 
   return (
