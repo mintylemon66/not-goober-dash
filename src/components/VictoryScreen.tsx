@@ -53,7 +53,23 @@ const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: Victory
 
           // Only save the current user's result
           if (player.id === 'player-1') { // Assuming the current user is always player-1
-            const { error } = await supabase.rpc('insert_race_result', {
+            // Save to race_results table
+            const { error: raceError } = await supabase
+              .from('race_results')
+              .insert({
+                user_id: user.id,
+                username: username,
+                finish_time: player.finishTime,
+                character_name: player.character.name,
+                character_emoji: player.character.emoji
+              });
+            
+            if (raceError) {
+              console.error('Error saving race result:', raceError);
+            }
+
+            // Save/update personal best
+            const { error: personalBestError } = await supabase.rpc('upsert_personal_best', {
               p_user_id: user.id,
               p_username: username,
               p_finish_time: player.finishTime,
@@ -61,8 +77,8 @@ const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: Victory
               p_character_emoji: player.character.emoji
             });
             
-            if (error) {
-              console.error('Error saving race result:', error);
+            if (personalBestError) {
+              console.error('Error saving personal best:', personalBestError);
             }
           }
         } catch (error) {

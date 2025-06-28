@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      personal_bests: {
+        Row: {
+          achieved_at: string
+          best_time: number
+          character_emoji: string | null
+          character_name: string | null
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          achieved_at?: string
+          best_time: number
+          character_emoji?: string | null
+          character_name?: string | null
+          id?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          achieved_at?: string
+          best_time?: number
+          character_emoji?: string | null
+          character_name?: string | null
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -60,12 +90,90 @@ export type Database = {
         }
         Relationships: []
       }
+      room_players: {
+        Row: {
+          character_data: Json | null
+          id: string
+          joined_at: string
+          room_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          character_data?: Json | null
+          id?: string
+          joined_at?: string
+          room_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          character_data?: Json | null
+          id?: string
+          joined_at?: string
+          room_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_players_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          code: string
+          created_at: string
+          host_user_id: string
+          id: string
+          is_active: boolean
+          max_players: number
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          host_user_id: string
+          id?: string
+          is_active?: boolean
+          max_players?: number
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          host_user_id?: string
+          id?: string
+          is_active?: boolean
+          max_players?: number
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_room_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      upsert_personal_best: {
+        Args: {
+          p_user_id: string
+          p_username: string
+          p_finish_time: number
+          p_character_name: string
+          p_character_emoji: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

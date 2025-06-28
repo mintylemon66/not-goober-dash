@@ -5,6 +5,7 @@ import GameArena from "@/components/GameArena";
 import VictoryScreen from "@/components/VictoryScreen";
 import AuthForm from "@/components/AuthForm";
 import UserProfile from "@/components/UserProfile";
+import RoomLobby from "@/components/RoomLobby";
 
 export type Character = {
   id: string;
@@ -30,7 +31,7 @@ export type Player = {
   finishTime?: number;
 };
 
-export type GameState = "lobby" | "character-select" | "playing" | "victory";
+export type GameState = "lobby" | "character-select" | "playing" | "victory" | "multiplayer";
 
 export type Platform = {
   x: number;
@@ -46,6 +47,7 @@ const Index = () => {
   const [currentMap, setCurrentMap] = useState<Platform[]>([]);
   const [maxWinners, setMaxWinners] = useState<number>(1);
   const [showAuthForm, setShowAuthForm] = useState(false);
+  const [currentRoomCode, setCurrentRoomCode] = useState<string>('');
   const { loading } = useAuth();
 
   const startGame = () => {
@@ -60,6 +62,7 @@ const Index = () => {
     setWinner(null);
     setCurrentMap([]);
     setMaxWinners(1);
+    setCurrentRoomCode('');
   };
 
   const playAnotherRound = () => {
@@ -77,6 +80,11 @@ const Index = () => {
     setPlayers(resetPlayers);
     setWinner(null);
     setCurrentMap([]);
+    setGameState("character-select");
+  };
+
+  const startPrivateGame = (roomCode: string) => {
+    setCurrentRoomCode(roomCode);
     setGameState("character-select");
   };
 
@@ -107,12 +115,20 @@ const Index = () => {
             </div>
             
             <div className="space-y-4">
-              <button
-                onClick={() => setGameState("character-select")}
-                className="bg-white text-purple-600 font-bold text-xl px-8 py-4 rounded-full shadow-lg hover:scale-110 transition-all duration-200 hover:shadow-xl"
-              >
-                🎮 Start Game
-              </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
+                <button
+                  onClick={() => setGameState("character-select")}
+                  className="bg-white text-purple-600 font-bold text-xl px-8 py-4 rounded-full shadow-lg hover:scale-110 transition-all duration-200 hover:shadow-xl"
+                >
+                  🎮 Local Game
+                </button>
+                <button
+                  onClick={() => setGameState("multiplayer")}
+                  className="bg-yellow-500 text-purple-900 font-bold text-xl px-8 py-4 rounded-full shadow-lg hover:scale-110 transition-all duration-200 hover:shadow-xl"
+                >
+                  🌐 Multiplayer
+                </button>
+              </div>
               
               <div className="text-white/80 text-sm space-y-2">
                 <p>• Up to 4 players can join!</p>
@@ -120,10 +136,18 @@ const Index = () => {
                 <p>• Race on randomly generated maps!</p>
                 <p>• Use special dash moves!</p>
                 <p>• Don't fall off the platforms!</p>
+                <p>• Track your personal best times!</p>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {gameState === "multiplayer" && (
+        <RoomLobby
+          onStartPrivateGame={startPrivateGame}
+          onBack={() => setGameState("lobby")}
+        />
       )}
 
       {gameState === "character-select" && (
@@ -133,7 +157,7 @@ const Index = () => {
           maxWinners={maxWinners}
           setMaxWinners={setMaxWinners}
           onStartGame={startGame}
-          onBack={() => setGameState("lobby")}
+          onBack={() => currentRoomCode ? setGameState("multiplayer") : setGameState("lobby")}
         />
       )}
 

@@ -12,6 +12,15 @@ interface LeaderboardEntry {
   created_at: string;
 }
 
+interface PersonalBest {
+  id: string;
+  username: string;
+  best_time: number;
+  character_name: string;
+  character_emoji: string;
+  achieved_at: string;
+}
+
 interface LeaderboardProps {
   currentRaceResults: Array<{
     username: string;
@@ -23,15 +32,21 @@ interface LeaderboardProps {
 
 const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
   const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [personalBests, setPersonalBests] = useState<PersonalBest[]>([]);
   const { user } = useAuth();
 
   useEffect(() => {
     fetchLeaderboard();
+    fetchPersonalBests();
   }, []);
 
   const fetchLeaderboard = async () => {
     try {
-      const { data, error } = await supabase.rpc('get_leaderboard');
+      const { data, error } = await supabase
+        .from('race_results')
+        .select('*')
+        .order('finish_time', { ascending: true })
+        .limit(10);
 
       if (error) {
         console.error('Error fetching leaderboard:', error);
@@ -44,6 +59,25 @@ const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
     }
   };
 
+  const fetchPersonalBests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('personal_bests')
+        .select('*')
+        .order('best_time', { ascending: true })
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching personal bests:', error);
+        return;
+      }
+
+      setPersonalBests(data || []);
+    } catch (error) {
+      console.error('Error fetching personal bests:', error);
+    }
+  };
+
   const formatTime = (timeInMs: number) => {
     const seconds = Math.floor(timeInMs / 1000);
     const milliseconds = timeInMs % 1000;
@@ -51,7 +85,7 @@ const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl">
       {/* Current Race Results */}
       <Card className="bg-white/20 backdrop-blur-sm border-white/30">
         <CardHeader>
@@ -83,6 +117,50 @@ const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
                   </TableCell>
                 </TableRow>
               ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Personal Bests */}
+      <Card className="bg-white/20 backdrop-blur-sm border-white/30">
+        <CardHeader>
+          <CardTitle className="text-white text-xl">🏆 Personal Bests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-white/20">
+                <TableHead className="text-white/90">#</TableHead>
+                <TableHead className="text-white/90">Player</TableHead>
+                <TableHead className="text-white/90">Time</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {personalBests.length > 0 ? (
+                personalBests.map((entry, index) => (
+                  <TableRow key={entry.id} className="border-white/10">
+                    <TableCell className="text-white font-bold">
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    </TableCell>
+                    <TableCell className="text-white">
+                      <div className="flex items-center gap-2">
+                        <span>{entry.character_emoji}</span>
+                        <span>{entry.username}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-white/90">
+                      {formatTime(entry.best_time)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow className="border-white/10">
+                  <TableCell colSpan={3} className="text-white/70 text-center py-4">
+                    No personal bests yet!
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
