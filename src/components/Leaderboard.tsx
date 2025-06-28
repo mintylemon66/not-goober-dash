@@ -79,9 +79,8 @@ const Leaderboard = ({ currentRaceResults }: LeaderboardProps) => {
   };
 
   const formatTime = (timeInMs: number) => {
-    const seconds = Math.floor(timeInMs );
-    const milliseconds = timeInMs % 1000;
-    return timeInMs;
+    const timeInSeconds = timeInMs / 1000;
+    return timeInSeconds.toFixed(4) + 's';
   };
 
   return (

@@ -100,6 +100,11 @@ const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: Victory
       characterEmoji: player.character.emoji
     }));
 
+  const formatTime = (timeInMs: number) => {
+    const timeInSeconds = timeInMs / 1000;
+    return timeInSeconds.toFixed(4);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="text-center space-y-8 w-full max-w-6xl">
@@ -119,7 +124,7 @@ const VictoryScreen = ({ winner, players, onPlayAgain, onAnotherRound }: Victory
             </p>
             {winner.finishTime && (
               <p className="text-xl text-white/80">
-                Finish Time: {Math.floor(winner.finishTime / 1000)}.{(winner.finishTime % 1000).toString().padStart(3, '0')}s
+                Finish Time: {formatTime(winner.finishTime)}s
               </p>
             )}
           </div>

@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      page_views: {
+        Row: {
+          created_at: string
+          id: string
+          page_path: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          page_path: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          page_path?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       personal_bests: {
         Row: {
           achieved_at: string
@@ -163,6 +187,10 @@ export type Database = {
       generate_room_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      increment_page_views: {
+        Args: { page_path: string }
+        Returns: number
       }
       upsert_personal_best: {
         Args: {
